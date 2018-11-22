@@ -1,0 +1,67 @@
+# docker-compose による LAMP 環境作成 ＠2018/11/21
+
+# docker-compose の使用バージョン
+version: "3"
+# docker-compose がバージョン 1.13.0以降 の場合、version 3.0 に対応
+
+# コンテナから作られるサービスの定義
+services:
+
+  # コンテナ名称
+  mysql:
+    # コンテナを作成するためのイメージ
+    #image: mysql:5.7
+    # Docker 公式イメージ
+    # https://hub.docker.com/_/mysql/
+    # の MySQL5.7 を用いる
+
+    # イメージを作成するための DockerFile のある場所
+    build: ./mysql
+    # ⇒ このファイルから見て ./mysql/Dockerfile が対象となる
+
+    # 公開ポート
+    ports:
+      - "3306:3306"
+      # 外部公開ポート番号：コンテナのポート番号
+
+    # このコンテナのための環境変数の設定
+    #environment:
+      #MYSQL_ROOT_PASSWORD: password
+
+    # マウントボリューム～コンテナデータと手元データの連携定義
+    volumes:
+      - db:/var/lib/mysql
+      # 手元のパス：コンテナのパス
+      # 「db」という名称のボリュームと /var/lib/mysql を結びつける
+
+  # コンテナ名称
+  web:
+    # イメージを作成するための DockerFile のある場所
+    build: ./web
+    # ⇒ このファイルから見て ./web/Dockerfile が対象となる
+
+    # 公開ポート
+    ports:
+      - "80:80"
+      # 外部公開ポート番号：コンテナのポート番号
+
+    # マウントボリューム～コンテナデータと手元データの連携定義
+    volumes:
+      - ./html/:/var/www/html
+      # 手元のパス：コンテナのパス
+
+# 旧式の記述方法であるため不要
+#    links:
+#      - mysql
+
+    # 別コンテナとの連携定義
+    depends_on:
+      - mysql
+      # 連携するコンテナ名称
+      # この記述があると mysql コンテナを先に起動し、
+      # その後この web コンテナを起動する
+
+# マウントボリューム～コンテナデータと手元データの連携定義
+volumes:
+  db:
+
